@@ -110,6 +110,7 @@ class ShoppingCart {
     this.total = 0;
     this.taxRate = 8.25;
   }
+
   addItem(id, products) {
     // Your ShoppingCart class needs the ability to add items. The first parameter, id, is the id of the product the user has added to their cart. The second parameter, products, is an array of product objects. By using a parameter instead of directly referencing your existing products array, this method will be more flexible if you wanted to add additional product lists in the future.
     const product = products.find((item) => item.id === id); // You need to find the product that the user is adding to the cart.
@@ -137,9 +138,40 @@ class ShoppingCart {
       `); // to add new HTML to your productsContainer
     // The behaviour of the addItem method needs to change if the product is already in the cart or not. Use undefined for both the truthy and falsy expressions to avoid a syntax error.
   }
+
   getCounts() {
     return this.items.length; // You need a way to access the total number of items in the cart. The best way to do this is to add another method to your ShoppingCart class, rather than accessing the items array directly.
   }
+
+  // feature is to allow users to clear their cart
+  clearCart() {
+    if (!this.items.length) {
+      // check if the items array is empty. Remember that 0 is a falsy value, so you can use the ! operator to check if the array is empty.
+      alert("Your shopping cart is already empty");
+      return;
+    }
+    const isCartCleared = confirm(
+      "Are you sure you want to clear all items from your shopping cart?"
+    ); // Browsers have a built-in confirm() function which displays a confirmation prompt to the user. confirm() accepts a string, which is the message displayed to the user. It returns true if the user confirms, and false if the user cancels.
+    if (isCartCleared) {
+      // You only want to clear the cart if the user confirms the prompt.
+      this.items = [];
+      this.total = 0;
+      productsContainer.innerHTML = ""; // start clearing the HTML
+      totalNumberOfItems.textContent = 0;
+      cartSubTotal.textContent = 0;
+      cartTaxes.textContent = 0;
+      cartTotal.textContent = 0;
+    }
+  }
+
+  calculateTaxes(amount) {
+    // Part of the total cost will include the tax, so you need to calculate that as well.
+    return parseFloat(((this.taxRate / 100) * amount).toFixed(2)); // divided by 100, to convert it to a percent
+    // Because of the way computers store and work with numbers, calculations involving decimal numbers can result in some strange behavior. For example, 0.1 + 0.2 is not equal to 0.3. This is because computers store decimal numbers as binary fractions, and some binary fractions cannot be represented exactly as decimal fractions. We want to clean up the number result from your calculation. the .toFixed() method the number 2 as an argument. This will round the number to two decimal places and return a string.
+    // The issue with .toFixed() returning a string is that you want to be able to perform calculations with the tax rate. To fix this, you can pass the .toFixed() call (including the calculation) to the parseFloat() function. This will convert the fixed string back into a number, preserving the existing decimal places.
+  }
+
   calculateTotal() {
     const subTotal = this.items.reduce((total, item) => total + item.price, 0); // to update the total price of the cart when the user adds an item.
     const tax = this.calculateTaxes(subTotal);
@@ -148,12 +180,6 @@ class ShoppingCart {
     cartTaxes.textContent = `$${tax.toFixed(2)}`;
     cartTotal.textContent = `$${this.total.toFixed(2)}`;
     return this.total;
-  }
-  calculateTaxes(amount) {
-    // Part of the total cost will include the tax, so you need to calculate that as well.
-    return parseFloat(((this.taxRate / 100) * amount).toFixed(2)); // divided by 100, to convert it to a percent
-    // Because of the way computers store and work with numbers, calculations involving decimal numbers can result in some strange behavior. For example, 0.1 + 0.2 is not equal to 0.3. This is because computers store decimal numbers as binary fractions, and some binary fractions cannot be represented exactly as decimal fractions. We want to clean up the number result from your calculation. the .toFixed() method the number 2 as an argument. This will round the number to two decimal places and return a string.
-    // The issue with .toFixed() returning a string is that you want to be able to perform calculations with the tax rate. To fix this, you can pass the .toFixed() call (including the calculation) to the parseFloat() function. This will convert the fixed string back into a number, preserving the existing decimal places.
   }
 }
 
@@ -176,3 +202,7 @@ cartBtn.addEventListener("click", () => {
   cartContainer.style.display = isCartShowing ? "block" : "none"; // show or hide the cart
   // Now you should be able to see your cart and add items to it.
 });
+
+// to make your clear button functional
+clearCartBtn.addEventListener("click", cart.clearCart.bind(cart));
+// For the callback, you can pass in cart.clearCart directly. However, doing so will not work, because the context of this will be the clearCartBtn element. You need to bind the clearCart method to the cart object. You can do this by passing cart.clearCart.bind(cart) as the callback.
